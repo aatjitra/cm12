@@ -4533,10 +4533,10 @@ static ssize_t show_slab_objects(struct kmem_cache *s,
 					WARN_ON_ONCE(1);
 			else
 				x = page->pages;
-				total += x;
-				nodes[node] += x;
-			}
-			per_cpu[node]++;
+			total += x;
+			nodes[node] += x;
+		}
+		per_cpu[node]++;
 		}
 	}
 
