@@ -100,6 +100,7 @@ Optional properties
 - qcom,efuse-temperature-map: Truth table of efuse value temperature value pair for
 			different parts. if qcom,default temp is defined, then it can
 			specify only pairs which deviate from default temperature.
+
 - qcom,therm-reset-temp: Degree above which the KTM will initiate a secure watchdog reset.
 			When this property is defined, KTM will monitor all the tsens from
 			boot time and will initiate a secure watchdog reset if any of the
