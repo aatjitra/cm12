@@ -15,6 +15,7 @@
 #include <linux/module.h>
 #include <linux/mempool.h>
 #include <linux/mutex.h>
+#include <linux/ratelimit.h>
 #include <asm/atomic.h>
 #include "diagchar.h"
 #include "diagfwd_bridge.h"
@@ -129,7 +130,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 			driver->diagpool = NULL;
 		} else if (driver->ref_count == 0 && pool_type ==
 							POOL_TYPE_ALL) {
-			pr_err("diag: Unable to destroy COPY mempool");
+			pr_err_ratelimited("diag: Unable to destroy COPY mempool");
 		}
 	}
 
@@ -139,7 +140,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 			driver->diag_hdlc_pool = NULL;
 		} else if (driver->ref_count == 0 && pool_type ==
 							POOL_TYPE_ALL) {
-			pr_err("diag: Unable to destroy HDLC mempool");
+			pr_err_ratelimited("diag: Unable to destroy HDLC mempool");
 		}
 	}
 
@@ -149,7 +150,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 			driver->diag_user_pool = NULL;
 		} else if (driver->ref_count == 0 && pool_type ==
 							POOL_TYPE_ALL) {
-			pr_err("diag: Unable to destroy USER mempool");
+			pr_err_ratelimited("diag: Unable to destroy USER mempool");
 		}
 	}
 
@@ -162,7 +163,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 			driver->diag_write_struct_pool = NULL;
 		} else if (driver->ref_count == 0 && pool_type ==
 							POOL_TYPE_ALL) {
-			pr_err("diag: Unable to destroy STRUCT mempool");
+			pr_err_ratelimited("diag: Unable to destroy STRUCT mempool");
 		}
 	}
 
@@ -172,7 +173,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 			driver->diag_dci_pool = NULL;
 		} else if (driver->ref_count == 0 && pool_type ==
 							POOL_TYPE_ALL) {
-				pr_err("diag: Unable to destroy DCI mempool");
+				pr_err_ratelimited("diag: Unable to destroy DCI mempool");
 		}
 	}
 #ifdef CONFIG_DIAGFWD_BRIDGE_CODE
@@ -184,7 +185,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 					diag_hsic[index].diag_hsic_pool);
 				diag_hsic[index].diag_hsic_pool = NULL;
 			} else if (pool_type == POOL_TYPE_ALL)
-				pr_err("Unable to destroy HDLC mempool for ch %d"
+				pr_err_ratelimited("Unable to destroy HDLC mempool for ch %d"
 								, index);
 		}
 
@@ -200,7 +201,7 @@ void diagmem_exit(struct diagchar_dev *driver, int pool_type)
 					diag_hsic[index].diag_hsic_write_pool);
 				diag_hsic[index].diag_hsic_write_pool = NULL;
 			} else if (pool_type == POOL_TYPE_ALL)
-				pr_err("Unable to destroy HSIC USB struct mempool for ch %d"
+				pr_err_ratelimited("Unable to destroy HSIC USB struct mempool for ch %d"
 								, index);
 		}
 	}
@@ -223,7 +224,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			mempool_free(buf, driver->diagpool);
 			atomic_add(-1, (atomic_t *)&driver->count);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver mempool memory which is already free %d",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver mempool memory which is already free %d",
 							driver->count);
 	} else if (pool_type == POOL_TYPE_HDLC) {
 		if (driver->diag_hdlc_pool != NULL &&
@@ -231,7 +232,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			mempool_free(buf, driver->diag_hdlc_pool);
 			atomic_add(-1, (atomic_t *)&driver->count_hdlc_pool);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver HDLC mempool which is already free %d ",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver HDLC mempool which is already free %d ",
 						driver->count_hdlc_pool);
 	} else if (pool_type == POOL_TYPE_USER) {
 		if (driver->diag_user_pool != NULL &&
@@ -239,7 +240,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			mempool_free(buf, driver->diag_user_pool);
 			atomic_add(-1, (atomic_t *)&driver->count_user_pool);
 		} else {
-			pr_err("diag: Attempt to free up DIAG driver USER mempool which is already free %d ",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver USER mempool which is already free %d ",
 						driver->count_user_pool);
 		}
 	} else if (pool_type == POOL_TYPE_WRITE_STRUCT) {
@@ -249,7 +250,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			atomic_add(-1,
 				 (atomic_t *)&driver->count_write_struct_pool);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver USB structure mempool which is already free %d ",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver USB structure mempool which is already free %d ",
 					driver->count_write_struct_pool);
 	} else if (pool_type == POOL_TYPE_DCI) {
 		if (driver->diag_dci_pool != NULL &&
@@ -258,7 +259,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 				atomic_add(-1,
 					(atomic_t *)&driver->count_dci_pool);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver DCI mempool which is already free %d ",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver DCI mempool which is already free %d ",
 					driver->count_dci_pool);
 #ifdef CONFIG_DIAGFWD_BRIDGE_CODE
 	} else if (pool_type == POOL_TYPE_HSIC ||
@@ -270,7 +271,7 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			atomic_add(-1, (atomic_t *)
 				   &diag_hsic[index].count_hsic_pool);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver HSIC mempool which is already free %d, ch = %d",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver HSIC mempool which is already free %d, ch = %d",
 				diag_hsic[index].count_hsic_pool, index);
 	} else if (pool_type == POOL_TYPE_HSIC_WRITE ||
 				pool_type == POOL_TYPE_HSIC_2_WRITE) {
@@ -282,11 +283,11 @@ void diagmem_free(struct diagchar_dev *driver, void *buf, int pool_type)
 			atomic_add(-1, (atomic_t *)
 				&diag_hsic[index].count_hsic_write_pool);
 		} else
-			pr_err("diag: Attempt to free up DIAG driver HSIC USB structure mempool which is already free %d, ch = %d",
+			pr_err_ratelimited("diag: Attempt to free up DIAG driver HSIC USB structure mempool which is already free %d, ch = %d",
 				driver->count_write_struct_pool, index);
 #endif
 	} else {
-		pr_err("diag: In %s, unknown pool type: %d\n",
+		pr_err_ratelimited("diag: In %s, unknown pool type: %d\n",
 			__func__, pool_type);
 
 	}
@@ -330,19 +331,19 @@ void diagmem_init(struct diagchar_dev *driver)
 	}
 
 	if (!driver->diagpool)
-		pr_err("diag: Cannot allocate diag mempool\n");
+		pr_err_ratelimited("diag: Cannot allocate diag mempool\n");
 
 	if (!driver->diag_hdlc_pool)
-		pr_err("diag: Cannot allocate diag HDLC mempool\n");
+		pr_err_ratelimited("diag: Cannot allocate diag HDLC mempool\n");
 
 	if (!driver->diag_user_pool)
-		pr_err("diag: Cannot allocate diag USER mempool\n");
+		pr_err_ratelimited("diag: Cannot allocate diag USER mempool\n");
 
 	if (!driver->diag_write_struct_pool)
-		pr_err("diag: Cannot allocate diag USB struct mempool\n");
+		pr_err_ratelimited("diag: Cannot allocate diag USB struct mempool\n");
 
 	if (!driver->diag_dci_pool)
-		pr_err("diag: Cannot allocate diag DCI mempool\n");
+		pr_err_ratelimited("diag: Cannot allocate diag DCI mempool\n");
 
 }
 
@@ -350,7 +351,7 @@ void diagmem_init(struct diagchar_dev *driver)
 void diagmem_hsic_init(int index)
 {
 	if (index < 0 || index >= MAX_HSIC_CH) {
-		pr_err("diag: Invalid hsic index in %s\n", __func__);
+		pr_err_ratelimited("diag: Invalid hsic index in %s\n", __func__);
 		return;
 	}
 
@@ -372,10 +373,10 @@ void diagmem_hsic_init(int index)
 	}
 
 	if (!diag_hsic[index].diag_hsic_pool)
-		pr_err("Cannot allocate diag HSIC mempool for ch %d\n", index);
+		pr_err_ratelimited("Cannot allocate diag HSIC mempool for ch %d\n", index);
 
 	if (!diag_hsic[index].diag_hsic_write_pool)
-		pr_err("Cannot allocate diag HSIC struct mempool for ch %d\n",
+		pr_err_ratelimited("Cannot allocate diag HSIC struct mempool for ch %d\n",
 									index);
 
 }
