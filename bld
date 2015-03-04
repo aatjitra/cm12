@@ -16,8 +16,8 @@ export SUBARCH=arm
 export CROSS_COMPILE=/home/ardi/arm-cortex_a15-linux-gnueabihf-linaro_4.9.3-2015.02/bin/arm-cortex_a15-linux-gnueabihf-
 echo "Cleaning previous built....."
 rm arch/arm/boot/zImage
-make -j4 clean
-make -j4 mrproper
+# make -j4 clean
+# make -j4 mrproper
 rm ramdisk/split_img/boot.img-zImage
 rm ramdisk/image-new.img
 
@@ -31,10 +31,10 @@ echo "Copying zImage files....."
 cp -v arch/arm/boot/zImage ramdisk/split_img/boot.img-zImage
 
 echo "Copying original dt.img....."
-cp -v '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/boot.img-dtb' '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/split_img' 
+cp -v '/home/ardi/cm12/ramdisk/boot.img-dtb' '/home/ardi/cm12/ramdisk/split_img' 
 
 echo "Making dt.img....."
-'/home/ardi/android_kernel_oneplus_msm8974/ramdisk/dtbToolCM' -2 -o '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/split_img/boot.img-dtb' -s 2048 -p '/home/ardi/android_kernel_oneplus_msm8974/scripts/dtc/' '/home/ardi/android_kernel_oneplus_msm8974/arch/arm/boot/'
+'/home/ardi/cm12/ramdisk/dtbToolCM' -2 -o '/home/ardi/cm12/ramdisk/split_img/boot.img-dtb' -s 2048 -p '/home/ardi/cm12/scripts/dtc/' '/home/ardi/cm12/arch/arm/boot/'
 echo "dt.img completed....."
 
 echo "Building Image Files....."
