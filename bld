@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Kernel Details
+#BASE_AK_VER="Ind[One]sia"
+#VER=" - 1.0.0"
+#AK_VER="$BASE_AK_VER$VER"
+
+# Vars
+#export LOCALVERSION=~`echo $AK_VER`
+echo "Setting Environment....."
+export KBUILD_BUILD_USER=aatjitra
+export KBUILD_BUILD_HOST=[One]+
+export USE_CCACHE=1
+export ARCH=arm
+export SUBARCH=arm
+export CROSS_COMPILE=/home/ardi/arm-cortex_a15-linux-gnueabihf-linaro_4.9.3-2015.02/bin/arm-cortex_a15-linux-gnueabihf-
+echo "Cleaning previous built....."
+rm arch/arm/boot/zImage
+make -j4 clean
+make -j4 mrproper
+rm ramdisk/split_img/boot.img-zImage
+rm ramdisk/image-new.img
+
+echo "Building configuration....."
+make ARCH=arm cyanogenmod_bacon_defconfig
+echo "Building zImage....."
+make -j4
+
+if [ -e arch/arm/boot/zImage ]; then
+echo "Copying zImage files....."
+cp -v arch/arm/boot/zImage ramdisk/split_img/boot.img-zImage
+
+echo "Copying original dt.img....."
+cp -v '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/boot.img-dtb' '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/split_img' 
+
+echo "Making dt.img....."
+'/home/ardi/android_kernel_oneplus_msm8974/ramdisk/dtbToolCM' -2 -o '/home/ardi/android_kernel_oneplus_msm8974/ramdisk/split_img/boot.img-dtb' -s 2048 -p '/home/ardi/android_kernel_oneplus_msm8974/scripts/dtc/' '/home/ardi/android_kernel_oneplus_msm8974/arch/arm/boot/'
+echo "dt.img completed....."
+
+echo "Building Image Files....."
+cd ramdisk
+./repackimg.sh
+cd ..
+fi;
+
+
